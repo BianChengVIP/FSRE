@@ -132,7 +132,7 @@ docker exec spug init_spug admin spug.dev
 ```bash
 mkdir -p /data
 cd /data
-git clone --depth=1 https://github.com/BianChengVIP/Linux_SRE_P1.git
+git clone --depth=1 https://github.com/BianChengVIP/FSRE.git
 ```
 
 
