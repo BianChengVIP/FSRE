@@ -56,7 +56,7 @@ systemctl start docker
 
 ### 2. 创建docker-compose.yml
 
-```yaml
+```bash
 cat > docker-compose.yml <<'EOF'
 version: "3.3"
 services:
@@ -117,7 +117,7 @@ docker exec spug init_spug admin spug.dev
 
 ### 5. 访问测试
 
-在浏览器中输入 `http://localhost:80` 访问（默认账户密码在第4步初始化时设置）。
+在浏览器中输入 `http://IP:80` 访问（默认账户密码在第4步初始化时设置）。
 
 
 
@@ -127,9 +127,9 @@ docker exec spug init_spug admin spug.dev
 
 ## 手动安装：
 
-### 克隆项目
+### 1、克隆项目
 
-```
+```bash
 mkdir -p /data
 cd /data
 git clone --depth=1 https://github.com/BianChengVIP/Linux_SRE_P1.git
@@ -137,9 +137,9 @@ git clone --depth=1 https://github.com/BianChengVIP/Linux_SRE_P1.git
 
 
 
-### 安装环境
+### 2、安装环境
 
-```
+```bash
 yum install -y epel-release
 yum install -y git mariadb-server mariadb-devel python3-devel gcc openldap-devel redis nginx supervisor python36 rsync sshfs
 
@@ -148,9 +148,9 @@ yum install -y git mariadb-server mariadb-devel python3-devel gcc openldap-devel
 
 
 
-### 创建运行环境
+### 3、创建运行环境
 
-```
+```bash
 cd /data/spug/spug_api
 python3 -m venv venv
 source venv/bin/activate
@@ -163,9 +163,9 @@ pip install gunicorn mysqlclient -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
 
 
-### 配置数据库
+### 4、配置数据库
 
-```
+```bash
 systemctl start mariadb
 systemctl enable mariadb
 mysql -e "create database spug default character set utf8mb4 collate utf8mb4_unicode_ci;"
@@ -175,9 +175,9 @@ mysql -e "flush privileges"
 
 
 
-### 修改后端配置  
+### 5、修改后端配置  
 
-```
+```bash
 cat <<'EOF' >spug/overrides.py
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1']
@@ -200,31 +200,32 @@ EOF
 
 
 
-### 初始化数据库
+### 6、初始化数据库
 
-```
+```bash
 cd /data/spug/spug_api
 python manage.py updatedb
 ```
 
 
 
-### 创建默认管理员账户
+### 7、创建默认管理员账户
 
-```
+```bash
 python manage.py user add -u admin -p spug.dev -s -n 管理员
 
 
+
+```
+
+
+
+
+
+### 8、创建启动服务脚本
+
+```bash
 mkdir /etc/supervisord.d/
-```
-
-
-
-
-
-### 创建启动服务脚本
-
-```
 cat <<'EOF' >/etc/supervisord.d/spug.ini
 [program:spug-api]
 command = bash /data/spug/spug_api/tools/start-api.sh
@@ -256,26 +257,12 @@ EOF
 
 
 
-```
-cat > /etc/yum.repos.d/nginx.repo <<'EOF'
-[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/centos/7/$basearch/
-gpgcheck=0
-enabled=1
-EOF
-
-yum install -y epel-release
-yum install -y git mariadb-server mariadb-devel python3-devel gcc openldap-devel redis nginx supervisor python36 rsync sshfs
-sed -i 's/ default_server//g' /etc/nginx/nginx.conf
-```
 
 
 
+### 9、创建前端nginx配置文件
 
-### 创建前端nginx配置文件
-
-```
+```bash
   cat <<'EOF' >/etc/nginx/conf.d/spug.conf
 server {
         listen 80;
@@ -314,9 +301,9 @@ EOF
 
 
 
-### 关闭Firewalld 和 selinux
+### 10、关闭Firewalld 和 selinux
 
-```
+```bash
 systemctl stop firewalld
 systemctl disable firewalld
 setenforce 0
@@ -328,14 +315,22 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 
 
-### 设置开机启动并开启服务
+### 11、设置开机启动，并开启服务
 
-```
+```bash
 systemctl enable --now nginx
 systemctl enable --now redis
 systemctl enable --now supervisord
 
 
+
+```
+
+
+
+### 12、上传前端文件到 build 目录
+
+```bash
 mkdir build
 cd build/
 
@@ -385,3 +380,4 @@ cd build/
 ## License & Copyright
 
 [AGPL-3.0](https://opensource.org/licenses/AGPL-3.0)
+
